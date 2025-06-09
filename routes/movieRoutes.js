@@ -1,12 +1,13 @@
 import express from "express"
 import { getMovieInfo, getPopularMovies, searchMovies } from "../controllers/movieController.js"
+import { verifyToken } from "../middleware/authMiddleWare.js"
 
 
 const router = express.Router()
 
-router.get("/search", searchMovies)
-router.get("/popular", getPopularMovies)
-router.get("/:id",getMovieInfo)
+router.get("/search",verifyToken, searchMovies)
+router.get("/popular",verifyToken, getPopularMovies)
+router.get("/:id",verifyToken,getMovieInfo)
 
 
 export default router 

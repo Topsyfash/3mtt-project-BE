@@ -14,7 +14,7 @@ const addFavorite = async (req, res) => {
         const exists = await FavoriteMovie.findOne({ userId: req.user._id, movieId });
 
         if (exists) {
-            return res.status(400).json({ message: "Already favorited" })
+            return res.status(400).json({ message: "Already Added To Favorites" })
         };
 
         const response = await tmdb.get(`/movie/${movieId}`);

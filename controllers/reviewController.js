@@ -1,4 +1,5 @@
 import Review from "../models/reviewModel.js";
+import tmdb from "../utils/tmdb.js";
 
 
 const addReview = async (req, res) => {
@@ -28,10 +29,29 @@ const addReview = async (req, res) => {
 const getMovieReviews = async (req, res) => {
   try {
     const userId = req.user.id; 
-    const reviews = await Review.find({ userId }).populate('movieId', 'title poster_path'); 
+    const reviews = await Review.find({ userId }); 
 
-
-    res.status(200).json({ message:"Successful",reviews });
+    const enrichedReviews = await Promise.all(
+      reviews.map(async (review) => {
+    try {
+      const { data } = await tmdb.get(`/movie/${review.movieId}`)
+      
+      return {
+        ...review.toObject(),
+        title : data.title
+      }
+    } catch (error) {
+      return {
+            ...review.toObject(),
+            title: 'Unknown Title',
+          };
+    }
+  })
+)
+    res.status(200).json({
+      message: "Successful",
+      reviews: enrichedReviews
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to fetch user reviews' });
