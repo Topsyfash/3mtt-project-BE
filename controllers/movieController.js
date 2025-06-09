@@ -50,6 +50,30 @@ const getMovieInfo = async (req, res) => {
 
 }
 
+const getMovieTrailer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data } = await tmdb.get(
+      `/movie/${id}/videos?language=en-US`,
+      { params: { api_key: process.env.TMDB_API_KEY } }
+    );
+
+    const trailer = data.results.find(
+      (v) => v.type === 'Trailer' && v.site === 'YouTube'
+    );
+
+       if (!trailer) {
+      return res.status(404).json({ message: 'Trailer not found' });
+    }
+    res.json({ trailer });
+  } catch (error) {
+      res.status(500).json({
+          message: 'Failed to fetch trailer',
+          error
+      });
+  }
+}
 
 
-export {searchMovies,getPopularMovies,getMovieInfo}
+
+export {searchMovies,getPopularMovies,getMovieInfo , getMovieTrailer}
