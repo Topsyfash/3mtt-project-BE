@@ -26,3 +26,8 @@ mongoose.connect(process.env.MONGODB_URL).then(() => {
 
 app.use("/api",routes)
 
+app.get("/",async (req,res) => {
+  res.status(200).json({
+    message:"Welcome to Movie App Backend"
+  })
+})
