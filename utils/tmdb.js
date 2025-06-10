@@ -11,12 +11,12 @@ const ACCESS_TOKEN = process.env.TMDB_API_KEY
 const tmdb = axios.create({
     baseURL: TMDB_BASE_URL,
     timeout: 10000,
-     headers: {
-    Authorization: ACCESS_TOKEN,
-  },
-    // params: {
-    //     api_key: API_KEY
-    // }
+  //    headers: {
+  //   Authorization: ACCESS_TOKEN,
+  // },
+    params: {
+        api_key: API_KEY
+    }
 });
 
 export default tmdb

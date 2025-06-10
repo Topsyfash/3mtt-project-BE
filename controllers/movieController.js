@@ -54,8 +54,7 @@ const getMovieTrailer = async (req, res) => {
   try {
     const { id } = req.params;
     const { data } = await tmdb.get(
-      `/movie/${id}/videos?language=en-US`,
-      { params: { api_key: process.env.TMDB_API_KEY } }
+      `/movie/${id}/videos?language=en-US` 
     );
 
     const trailer = data.results.find(
