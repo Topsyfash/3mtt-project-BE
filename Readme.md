@@ -115,7 +115,7 @@ Example Header: Authorization: Bearer <your_token>
 ---
 
 ##  Project Structure
-
+```bash
 movie-app-backend/
 │
 ├── controllers/         # Route logic
@@ -128,7 +128,7 @@ movie-app-backend/
 ├── .env                 # Environment variables
 ├── package.json
 └── README.md
-
+```
 ---
 
 ## Postman Collection
