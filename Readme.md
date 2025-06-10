@@ -33,8 +33,7 @@ This is the backend API for a full-stack Movie App. It provides movie data from 
 ### 1. Clone the Repo
 
 ```bash
-git clone https://github.com/your-username/movie-app-backend.git
-cd movie-app-backend
+git clone https://github.com/Topsyfash/3mtt-project-BE.git
 ```
 
 ---
