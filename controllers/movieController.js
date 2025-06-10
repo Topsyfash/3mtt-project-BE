@@ -1,8 +1,13 @@
+import FavoriteMovie from "../models/favoriteMovieModel.js"
 import tmdb from "../utils/tmdb.js"
 
 const searchMovies = async (req,res) => {
     try {
         const { query, year } = req.query
+
+         if (!query) {
+      return res.status(400).json({ message: "Query parameter is required." });
+    }
         
         const response = await tmdb.get('/search/movie', {
             params: {
@@ -11,9 +16,17 @@ const searchMovies = async (req,res) => {
             }
         })
 
+        let movies = response.data.results;
+        
+        movies.sort((a, b) => {
+      const dateA = new Date(a.release_date);
+      const dateB = new Date(b.release_date);
+      return dateB - dateA;
+        });
+        
         res.status(200).json({
             message: "Sucessful",
-            movies:response.data.results
+            movies:movies
         })
     } catch(error) {
         res.status(500).json({message:error.message})
@@ -74,5 +87,45 @@ const getMovieTrailer = async (req, res) => {
 }
 
 
+const getMovieRecommendations = async (req, res) => {
 
-export {searchMovies,getPopularMovies,getMovieInfo , getMovieTrailer}
+    try {
+        const favorites = await FavoriteMovie.find({ userId: req.user.id });
+
+        console.log(favorites)
+
+        const favoriteIds = favorites.map((fav) => fav.movieId);
+        console.log(favoriteIds)
+
+    let recommendedMovies = [];
+
+        for (const movieId of favoriteIds.slice(0, 5)) {
+         if (!movieId || isNaN(movieId)) {
+    console.warn(`Invalid TMDB movieId:`, movieId);
+    continue;
+  }
+      const response = await tmdb.get(`/movie/${movieId}/recommendations`);
+      recommendedMovies.push(...response.data.results);
+    }
+
+    const seen = new Set();
+    const uniqueMovies = recommendedMovies.filter((movie) => {
+      if (seen.has(movie.id)) return false;
+      seen.add(movie.id);
+      return true;
+    });
+
+    res.status(200).json({
+      message: "Personalized recommendations",
+      movies: uniqueMovies.slice(0, 20),
+    });
+    } catch (error) {
+        console.error(" Axios or TMDB error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+
+export {searchMovies,getPopularMovies,getMovieInfo , getMovieTrailer,getMovieRecommendations}
