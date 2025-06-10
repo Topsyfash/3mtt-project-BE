@@ -14,9 +14,9 @@ const tmdb = axios.create({
      headers: {
     Authorization: ACCESS_TOKEN,
   },
-    // params: {
-    //     api_key: API_KEY
-    // }
+    params: {
+        api_key: API_KEY
+    }
 });
 
 export default tmdb
