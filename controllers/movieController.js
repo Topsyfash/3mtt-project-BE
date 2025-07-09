@@ -1,3 +1,4 @@
+import axios from "axios";
 import FavoriteMovie from "../models/favoriteMovieModel.js"
 import tmdb from "../utils/tmdb.js"
 
@@ -24,9 +25,34 @@ const searchMovies = async (req, res) => {
             return dateB - dateA;
         });
 
+     const enrichedMovies = await Promise.all(
+      movies.slice(0, 10).map(async (movie) => {
+        try {
+          const omdbRes = await axios.get("http://www.omdbapi.com/", {
+            params: {
+              t: movie.title,
+              apikey: process.env.OMDB_KEY,
+            },
+          });
+
+          return {
+            ...movie,
+            imdbRating: omdbRes.data.imdbRating || "N/A",
+            releaseYear: omdbRes.data.Year || "N/A",
+          };
+        } catch (error) {
+          return {
+            ...movie,
+            imdbRating: "N/A",
+            releaseYear: "N/A",
+          };
+        }
+      })
+    );
+        
         res.status(200).json({
             message: "Sucessful",
-            movies: movies
+            movies: enrichedMovies
         })
     } catch (error) {
         res.status(500).json({ message: error.message })
@@ -37,9 +63,36 @@ const getPopularMovies = async (req, res) => {
 
     try {
         const response = await tmdb.get("/movie/popular")
+        const popularMovies = response.data.results;
+        
+         const enrichedMovies = await Promise.all(
+      popularMovies.slice(0, 15).map(async (movie) => {
+        try {
+          const omdbRes = await axios.get("http://www.omdbapi.com/", {
+            params: {
+              t: movie.title,
+              apikey: process.env.OMDB_KEY,
+            },
+          });
+
+          return {
+            ...movie,
+            imdbRating: omdbRes.data.imdbRating || "N/A",
+            releaseYear: omdbRes.data.Year || "N/A",
+          };
+        } catch (error) {
+          return {
+            ...movie,
+            imdbRating: "N/A",
+            releaseYear: "N/A",
+          };
+        }
+      })
+    );
+
         res.status(200).json({
             message: "Sucessful",
-            movies: response.data.results
+            movies: enrichedMovies
         })
     } catch (error) {
         res.status(500).json({ message: error.message, error: error?.response?.data || error.message })
@@ -50,13 +103,27 @@ const getPopularMovies = async (req, res) => {
 const getMovieInfo = async (req, res) => {
 
     try {
-        const { id } = req.params
-        const response = await tmdb.get(`/movie/${id}`)
+    const { id } = req.params;
 
-        res.status(200).json({
-            message: "Sucessful",
-            movie: response.data
-        })
+    const tmdbRes = await tmdb.get(`/movie/${id}`);
+    const tmdbMovie = tmdbRes.data;
+
+    const omdbRes = await axios.get(`http://www.omdbapi.com/`, {
+      params: {
+        t: tmdbMovie.title,
+        apikey: process.env.OMDB_KEY,
+      },
+    });
+
+    const imdbRating = omdbRes.data.imdbRating || "N/A";
+    const releaseYear = omdbRes.data.Year || "N/A";
+
+    res.status(200).json({
+      message: "Successful",
+      movie: tmdbMovie,
+      imdbRating,
+      releaseYear,
+    });
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
@@ -113,9 +180,35 @@ const getMovieRecommendations = async (req, res) => {
             return true;
         });
 
+
+        const enrichedMovies = await Promise.all(
+      uniqueMovies.slice(0, 15).map(async (movie) => {
+        try {
+          const omdbRes = await axios.get("http://www.omdbapi.com/", {
+            params: {
+              t: movie.title,
+              apikey: process.env.OMDB_KEY,
+            },
+          });
+
+          return {
+            ...movie,
+            imdbRating: omdbRes.data.imdbRating || "N/A",
+            releaseYear: omdbRes.data.Year || "N/A",
+          };
+        } catch (error) {
+          return {
+            ...movie,
+            imdbRating: "N/A",
+            releaseYear: "N/A",
+          };
+        }
+      })
+    );
+
         res.status(200).json({
             message: "Personalized recommendations",
-            movies: uniqueMovies.slice(0, 20),
+            movies: enrichedMovies
         });
     } catch (error) {
         console.error(" Axios or TMDB error:", error);
